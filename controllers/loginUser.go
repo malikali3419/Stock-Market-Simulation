@@ -26,6 +26,7 @@ func LoginUser(c *gin.Context) {
 		})
 		return
 	}
+
 	var found_user models.Users
 	results := initializers.DB.Where("username = ? ", user.Username).First(&found_user)
 	if results.Error != nil {

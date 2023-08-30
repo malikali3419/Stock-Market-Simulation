@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/gocelery/gocelery"
 	"net/http"
 	"stock_market_simulation/m/controllers"
 	"stock_market_simulation/m/initializers"
@@ -15,7 +16,10 @@ import (
 func init() {
 	initializers.LoadEnviromentalVariables()
 	initializers.ConnectToDatabase()
+	initializers.ConnectToRedis()
 }
+
+var worker *gocelery.CeleryWorker
 
 func main() {
 	r := gin.Default()
@@ -27,7 +31,23 @@ func main() {
 	r.POST("/stocks", controllers.AddStocks)
 	r.GET("/stocks", controllers.GetAllStocks)
 	r.GET("/stock/:ticker", controllers.GetOneStock)
-	r.POST("/transactions", controllers.DoTransaction)
+	taskCh := make(chan controllers.TransactionTask)
+
+	// Start background worker
+	go controllers.TransactionWorker(taskCh)
+
+	// Gin route to trigger background task
+	r.POST("/transactions", func(c *gin.Context) {
+		var transaction models.TransactionData
+		if err := c.ShouldBindJSON(&transaction); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		// Send task to background worker
+		taskCh <- controllers.TransactionTask{Context: c.Copy(), Transaction: transaction}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Transaction started"})
+	})
 	r.GET("/transactions/:user_id", controllers.GetAllTransactionOFUser)
 	r.GET("/transactions/:user_id/:start_time/:end_time", controllers.GetTransactionDataBetweenTime)
 
@@ -36,6 +56,7 @@ func main() {
 		return
 	}
 }
+
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationHeader := c.GetHeader("Authorization")
