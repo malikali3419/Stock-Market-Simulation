@@ -32,8 +32,6 @@ func main() {
 	r.GET("/stocks", controllers.GetAllStocks)
 	r.GET("/stock/:ticker", controllers.GetOneStock)
 	taskCh := make(chan controllers.TransactionTask)
-
-	// Start background worker
 	go controllers.TransactionWorker(taskCh)
 
 	// Gin route to trigger background task

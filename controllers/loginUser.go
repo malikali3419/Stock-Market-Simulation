@@ -28,13 +28,8 @@ func LoginUser(c *gin.Context) {
 	}
 
 	var found_user models.Users
-	results := initializers.DB.Where("username = ? ", user.Username).First(&found_user)
-	if results.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Username or Password is incorrect !",
-		})
-		return
-	}
+	initializers.DB.Where("username = ? ", user.Username).First(&found_user)
+
 	if err := bcrypt.CompareHashAndPassword([]byte(found_user.Password), []byte(user.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return

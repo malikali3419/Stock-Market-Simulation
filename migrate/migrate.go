@@ -7,8 +7,8 @@ import (
 
 func init() {
 	initializers.LoadEnviromentalVariables()
-	initializers.ConnectToDatabase()
+	initializers.ConnectToTestDatabase()
 }
 func main() {
-	initializers.DB.AutoMigrate(&models.TransactionData{})
+	initializers.DB.AutoMigrate(&models.StockData{})
 }
