@@ -1,17 +1,22 @@
 package controllers
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 	"net/http"
 	"stock_market_simulation/m/initializers"
 	"stock_market_simulation/m/models"
+	"time"
 )
 
 func init() {
 	initializers.LoadEnviromentalVariables()
 	initializers.ConnectToDatabase()
+	initializers.ConnectToRedis()
 }
 
 func AddStocks(c *gin.Context) {
@@ -57,31 +62,96 @@ func AddStocks(c *gin.Context) {
 
 func GetAllStocks(c *gin.Context) {
 	var allStocks []models.StockData
-	res := initializers.DB.Find(&allStocks)
-	if res.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": res.Error.Error(),
+
+	val, err := initializers.REDISCLIENT.Get(context.Background(), "stocks").Result()
+	if err == redis.Nil {
+
+		res := initializers.DB.Find(&allStocks)
+		if res.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": res.Error,
+			})
+			return
+		}
+		stockJSON, errorsStock := json.Marshal(allStocks)
+		if errorsStock != nil {
+			panic("Failed to serialize users to JSON: " + err.Error())
+		}
+		key := "stocks"
+		value := stockJSON
+		expiration := time.Hour
+
+		err := initializers.REDISCLIENT.Set(context.Background(), key, value, expiration).Err()
+		if err != nil {
+			panic("Failed to set data in Redis: " + err.Error())
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"stocks": allStocks,
 		})
 		return
+
+	} else if err != nil {
+		c.String(500, "Error retrieving value from Redis")
+		return
+	} else {
+
+		err = json.Unmarshal([]byte(val), &allStocks)
+		if err != nil {
+			panic("Failed to decode JSON users array: " + err.Error())
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"stocks": allStocks,
+		})
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"stocks": allStocks,
-	})
 
 }
 
 func GetOneStock(c *gin.Context) {
 	var ticker = c.Param("ticker")
 	var foundedStock models.StockData
-	result := initializers.DB.Where("ticker = ?", ticker).First(&foundedStock)
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": result.Error.Error(),
+	key := "stocks_" + ticker
+
+	val, err := initializers.REDISCLIENT.Get(context.Background(), key).Result()
+	if err == redis.Nil {
+
+		result := initializers.DB.Where("ticker = ?", ticker).First(&foundedStock)
+		if result.Error != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": result.Error,
+			})
+			return
+		}
+		stockJSON, errorsstock := json.Marshal(foundedStock)
+		if errorsstock != nil {
+			panic("Failed to serialize users to JSON: " + err.Error())
+		}
+		key := "stocks_" + ticker
+		value := stockJSON
+		expiration := time.Hour
+
+		err := initializers.REDISCLIENT.Set(context.Background(), key, value, expiration).Err()
+		if err != nil {
+			panic("Failed to set data in Redis: " + err.Error())
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"stocks": foundedStock,
 		})
 		return
+
+	} else if err != nil {
+		c.String(500, "Error retrieving value from Redis")
+		return
+	} else {
+
+		err = json.Unmarshal([]byte(val), &foundedStock)
+		if err != nil {
+			panic("Failed to decode JSON users array: " + err.Error())
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"stocks": foundedStock,
+		})
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"stock": foundedStock,
-	})
 
 }
