@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"stock_market_simulation/m/constants"
 	"stock_market_simulation/m/initializers"
 	"stock_market_simulation/m/models"
 	"time"
@@ -26,12 +27,10 @@ func LoginUser(c *gin.Context) {
 		})
 		return
 	}
-
 	var found_user models.Users
 	initializers.DB.Where("username = ? ", user.Username).First(&found_user)
-
 	if err := bcrypt.CompareHashAndPassword([]byte(found_user.Password), []byte(user.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": constants.InvalidCredentials})
 		return
 	}
 	claims := models.JWTClaims{
@@ -42,10 +41,9 @@ func LoginUser(c *gin.Context) {
 	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte("secret"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": constants.CouldNotGenerateToken})
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"token": token})
 
 }

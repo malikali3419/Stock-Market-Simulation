@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"stock_market_simulation/m/constants"
 )
 
 var DB *gorm.DB
@@ -14,8 +15,8 @@ func ConnectToDatabase() {
 	dsn := os.Getenv("DB_URL")
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to Connect Database !")
+		log.Fatalf(constants.FailedToConnectDatabase)
 	} else {
-		log.Printf("Connection Success !")
+		log.Printf(constants.ConnectionSuccess)
 	}
 }

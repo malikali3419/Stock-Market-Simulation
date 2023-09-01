@@ -11,7 +11,6 @@ type Users struct {
 	Username string
 	Password string
 	Balance  float32
-	//Transactions []TransactionData
 }
 type JWTClaims struct {
 	jwt.StandardClaims

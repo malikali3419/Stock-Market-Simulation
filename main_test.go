@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"stock_market_simulation/m/constants"
 	"stock_market_simulation/m/controllers"
 	"stock_market_simulation/m/initializers"
 	"stock_market_simulation/m/models"
@@ -21,10 +21,8 @@ func init() {
 }
 
 func TestUserRegister(t *testing.T) {
-	// Setup router
 	router := gin.Default()
 	router.POST("/users", controllers.ResgisterUser)
-	// Create a new HTTP request
 	payload := `{"username": "testuser", "password": "testpass"}`
 	req := httptest.NewRequest("POST", "/users", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
@@ -33,12 +31,11 @@ func TestUserRegister(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -52,7 +49,7 @@ func TestUserRegister(t *testing.T) {
 func TestLogin(t *testing.T) {
 	router := gin.Default()
 	router.POST("/login", controllers.LoginUser)
-	payload := `{"username": "testusr", "password": "testpass"}`
+	payload := `{"username": "testuser", "password": "testpass"}`
 	req := httptest.NewRequest("POST", "/login", strings.NewReader(payload))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
@@ -60,12 +57,11 @@ func TestLogin(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -78,21 +74,18 @@ func TestLogin(t *testing.T) {
 
 func TestGetAllUsers(t *testing.T) {
 	router := gin.Default()
-	router.GET("/allUsers", controllers.GetAllUsers)
-
-	req := httptest.NewRequest("GET", "/allUsers", nil)
-
+	router.GET("/all-users", controllers.GetAllUsers)
+	req := httptest.NewRequest("GET", "/all-users", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -107,18 +100,16 @@ func TestGetOneUser(t *testing.T) {
 	router := gin.Default()
 	router.GET("/username/:username", controllers.GetUser)
 	req := httptest.NewRequest("GET", "/username/testuser", nil)
-
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -147,12 +138,11 @@ func TestAddStocks(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -161,25 +151,22 @@ func TestAddStocks(t *testing.T) {
 	} else {
 		assert.Equal(t, http.StatusOK, w.Code)
 	}
-
 }
 
 func TestGetAllStocks(t *testing.T) {
 	router := gin.Default()
 	router.GET("/stocks", controllers.GetAllStocks)
 	req := httptest.NewRequest("GET", "/stocks", nil)
-
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -188,24 +175,22 @@ func TestGetAllStocks(t *testing.T) {
 	} else {
 		assert.Equal(t, http.StatusOK, w.Code)
 	}
-
 }
 
 func TestGetOneStock(t *testing.T) {
 	router := gin.Default()
 	router.GET("/stocks/:ticker", controllers.GetOneStock)
-	req := httptest.NewRequest("GET", "/stocks/GOGL", nil)
+	req := httptest.NewRequest("GET", "/stocks/GOOGL", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -226,9 +211,7 @@ func TestDoTransaction(t *testing.T) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		// Send task to background worker
 		taskCh <- controllers.TransactionTask{Context: c.Copy(), Transaction: transaction}
-
 		c.JSON(http.StatusOK, gin.H{"message": "Transaction started"})
 	})
 	payload := `{
@@ -245,12 +228,11 @@ func TestDoTransaction(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -270,12 +252,11 @@ func TestGetAllTransactionOfUSer(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -295,12 +276,11 @@ func TestGetTransactionDataBetweenTime(t *testing.T) {
 	res := w.Body
 	body, _ := ioutil.ReadAll(res)
 	bodyString := string(body)
-	fmt.Println(bodyString)
 	var result struct {
 		Error string `json:"error"`
 	}
 	if err := json.Unmarshal([]byte(bodyString), &result); err != nil {
-		fmt.Println("Error parsing JSON:", err)
+		t.Log(constants.FailedToSerializeJSON, err)
 		return
 	}
 	if result.Error != "" {
@@ -309,5 +289,4 @@ func TestGetTransactionDataBetweenTime(t *testing.T) {
 	} else {
 		assert.Equal(t, http.StatusOK, w.Code)
 	}
-
 }
