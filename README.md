@@ -27,7 +27,7 @@ $ go get -d -v $(cat dependencies.txt)
 6. Migrate the models ``` go run migrate/migrate.go```
 7. Get the build of project:
 ```bash
-$ go build -o Stock Market Simulation
+$ go build -o Stock_Market_Simulation
 ```
 8. Run the project:
 ```bash
