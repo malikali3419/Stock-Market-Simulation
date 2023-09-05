@@ -5,7 +5,7 @@ This Git repository is a comprehensive stock market simulation application. It p
 ## Table of Contents
 
 - [Installation](#installation)
-- [User Authentication](#User Authentication)
+- [User Authentication](#user-authentication)
 - [Working](#Working)
 - [License](#license)
 
