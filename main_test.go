@@ -270,7 +270,7 @@ func TestGetAllTransactionOfUSer(t *testing.T) {
 func TestGetTransactionDataBetweenTime(t *testing.T) {
 	router := gin.Default()
 	router.GET("/transactions/:user_id/:start_time/:end_time", controllers.GetTransactionDataBetweenTime)
-	req := httptest.NewRequest("GET", "/transactions/2/2023-08-28/2023-08-29", nil)
+	req := httptest.NewRequest("GET", "/transactions/1/2023-08-28/2023-08-29", nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	res := w.Body
